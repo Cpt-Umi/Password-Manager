@@ -5,6 +5,8 @@ const cors = require("cors");
 const PORT = process.env.PORT || 5000;
 require("dotenv").config();
 
+const { encrypt, decrypt } = require("./EncryptionHandler");
+
 app.use(cors());
 app.use(express.json());
 
@@ -17,10 +19,10 @@ const db = mysql.createConnection({
 
 app.post("/addpassword", (req, res) => {
   const { password, application } = req.body;
-
+  // const hexPassword = encrypt(password);
   db.query(
-    "INSERT INTO Passwords (pass, app) VALUES (?,?)",
-    [password, application],
+    "INSERT INTO Passwords (pass, app, iv) VALUES (?,?,?)",
+    [password, application, null],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -39,6 +41,10 @@ app.get("/getpasswords", (req, res) => {
       res.send(result);
     }
   });
+});
+
+app.post("/decryptpassword", (req, res) => {
+  res.send(decrypt(req.body));
 });
 
 app.get("/", (req, res) => {
