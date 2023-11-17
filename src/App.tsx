@@ -1,9 +1,9 @@
 import "./App.css";
 import Axios from "axios";
 import { FC, ChangeEvent, useState } from "react";
-import { Flex, Box, Button, Heading, Text } from "@chakra-ui/react";
+import { Flex, Box, Button, Heading } from "@chakra-ui/react";
 import InputCmp from "./components/InputCmp";
-import { Password } from "./interfaces";
+import { Encryption, Password } from "./interfaces";
 
 const App: FC = () => {
   const [password, setPassword] = useState<string>("");
@@ -30,6 +30,21 @@ const App: FC = () => {
     Axios.get(`http://localhost:5000/getpasswords`).then((res) =>
       setPassList(res.data)
     );
+  };
+
+  const decryptPassword = (encryption: Encryption): any => {
+    Axios.post(`http://localhost:5000/decryptpassword`, {
+      password: encryption.password,
+      iv: encryption.iv,
+    }).then((res) => {
+      setPassList(
+        passList.map((val) => {
+          return val.id === encryption.id
+            ? { id: val.id, pass: val.pass, app: res.data, iv: val.iv }
+            : val;
+        })
+      );
+    });
   };
 
   return (
@@ -83,21 +98,23 @@ const App: FC = () => {
           w={"98%"}
           flexDir={"column"}
         >
-          {passList.map((pass) => {
+          {passList.map((pass, key) => {
             return (
-              <Flex w={"100%"}>
-                <Heading
-                  textColor={"maroon"}
-                  w={"50%"}
-                  fontSize={"xl"}
-                  lineHeight={"10"}
-                >
-                  {pass.app}
-                </Heading>
-                <Text w={"50%"} fontSize={"lg"} lineHeight={"10"}>
-                  Pass: {pass.pass}
-                </Text>
-              </Flex>
+              <Box
+                w={"50%"}
+                onClick={() => {
+                  decryptPassword({
+                    id: pass.id,
+                    password: pass.pass,
+                    iv: pass.iv,
+                  });
+                }}
+                key={key}
+                cursor={"pointer"}
+                mb={"5px"}
+              >
+                <Heading fontSize={"2xl"}>{pass.app}</Heading>
+              </Box>
             );
           })}
         </Flex>
