@@ -19,10 +19,10 @@ const db = mysql.createConnection({
 
 app.post("/addpassword", (req, res) => {
   const { password, application } = req.body;
-  // const hexPassword = encrypt(password);
+  const hexPassword = encrypt(password);
   db.query(
     "INSERT INTO Passwords (pass, app, iv) VALUES (?,?,?)",
-    [password, application, null],
+    [hexPassword.password, application, hexPassword.iv],
     (err, result) => {
       if (err) {
         console.log(err);
